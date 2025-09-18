@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Device } from "@twilio/voice-sdk";
+import "./App.css";
 
 // ---------- Types ----------
 type CallStatus =
@@ -341,36 +342,36 @@ export default function App() {
 
   // ---------- UI ----------
   return (
-    <div style={styles.page}>
-      <header style={styles.header}>
-        <h1 style={{ margin: 0, fontSize: 20 }}>📞 Twilio Dialer</h1>
-        <small style={{ opacity: 0.8 }}>FastAPI · Lambda · API Gateway</small>
+    <div className="page">
+      <header className="header">
+        <h1 className="title">📞 Talentpull Dialer</h1>
+        <small className="subtitle">FastAPI · Lambda · API Gateway</small>
       </header>
 
-      <section style={styles.card}>
-        <h2 style={styles.h2}>Settings</h2>
-        <div style={styles.row}>
-          <label style={styles.label}>API Base</label>
+      <section className="card">
+        <h2 className="h2">Settings</h2>
+        <div className="row">
+          <label className="label">API Base</label>
           <input
-            style={styles.input}
+            className="input"
             placeholder="https://xxxx.execute-api.eu-north-1.amazonaws.com"
             value={apiBase}
             onChange={(e) => setApiBase(e.target.value.trim())}
           />
         </div>
-        <div style={styles.row}>
-          <label style={styles.label}>From Pool</label>
+        <div className="row">
+          <label className="label">From Pool</label>
           <input
-            style={styles.input}
+            className="input"
             placeholder="+4420..., +4420..., ..."
             value={fromPoolRaw}
             onChange={(e) => setFromPoolRaw(e.target.value)}
           />
         </div>
-        <div style={styles.row}>
-          <label style={styles.label}>Agent</label>
+        <div className="row">
+          <label className="label">Agent</label>
           <input
-            style={styles.input}
+            className="input"
             placeholder="Agent name"
             value={agent}
             onChange={(e) => setAgent(e.target.value)}
@@ -379,22 +380,22 @@ export default function App() {
       </section>
 
       {/* SERVER-PLACED CALL */}
-      <section style={styles.card}>
-        <h2 style={styles.h2}>Make a Call (Server-Placed)</h2>
-        <div style={styles.grid}>
+      <section className="card">
+        <h2 className="h2">Make a Call (Server-Placed)</h2>
+        <div className="grid">
           <div>
-            <label style={styles.label}>To (E.164)</label>
+            <label className="label">To (E.164)</label>
             <input
-              style={styles.input}
+              className="input"
               value={to}
               onChange={(e) => setTo(e.target.value.trim())}
               placeholder="+447700900123"
             />
           </div>
           <div>
-            <label style={styles.label}>From</label>
+            <label className="label">From</label>
             <select
-              style={styles.input}
+              className="input"
               value={fromNumber}
               onChange={(e) => setFromNumber(e.target.value)}
             >
@@ -407,64 +408,64 @@ export default function App() {
             </select>
           </div>
         </div>
-        <div style={{ marginTop: 12 }}>
-          <label style={styles.label}>Message</label>
+        <div className="mt-12">
+          <label className="label">Message</label>
           <textarea
-            style={{ ...styles.input, height: 80, resize: "vertical" }}
+            className="input textarea"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
         </div>
 
         {error && (
-          <div style={styles.error}>
+          <div className="error">
             <strong>Error:</strong> {error}
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <button style={styles.primaryBtn} onClick={placeCall} disabled={!apiBase}>
+        <div className="btnRow">
+          <button className="primaryBtn" onClick={placeCall} disabled={!apiBase}>
             Call
           </button>
           <button
-            style={styles.secondaryBtn}
+            className="secondaryBtn"
             onClick={hangup}
             disabled={!sid || terminalStatuses.has((status || "") as CallStatus)}
           >
             Hang up
           </button>
-          <button style={styles.ghostBtn} onClick={reset} disabled={!sid}>
+          <button className="ghostBtn" onClick={reset} disabled={!sid}>
             Reset
           </button>
         </div>
       </section>
 
       {/* BROWSER CALL (WEBRTC) */}
-      <section style={styles.card}>
-        <h2 style={styles.h2}> Hello Web Call </h2>
-        <div style={styles.row}>
+      <section className="card">
+        <h2 className="h2"> Hello Web Call </h2>
+        <div className="row">
           <button
-            style={styles.primaryBtn}
+            className="primaryBtn"
             onClick={registerClient}
             disabled={clientReady}
           >
             {clientReady ? "Mic ready ✓" : "Enable mic & register"}
           </button>
         </div>
-        <div style={styles.grid}>
+        <div className="grid">
           <div>
-            <label style={styles.label}>To (E.164)</label>
+            <label className="label">To (E.164)</label>
             <input
-              style={styles.input}
+              className="input"
               value={browserTo}
               onChange={(e) => setBrowserTo(e.target.value.trim())}
               placeholder="+447700900123"
             />
           </div>
           <div>
-            <label style={styles.label}>Caller ID</label>
+            <label className="label">Caller ID</label>
             <select
-              style={styles.input}
+              className="input"
               value={browserFrom}
               onChange={(e) => setBrowserFrom(e.target.value)}
             >
@@ -477,79 +478,77 @@ export default function App() {
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <div className="btnRow">
           <button
-            style={styles.primaryBtn}
+            className="primaryBtn"
             onClick={callFromBrowser}
             disabled={!clientReady}
           >
             Call from browser
           </button>
           <button
-            style={styles.secondaryBtn}
+            className="secondaryBtn"
             onClick={hangupBrowser}
             disabled={!activeBrowserCall}
           >
             Hang up
           </button>
         </div>
-        <p style={{ fontSize: 12, opacity: 0.7, marginTop: 8 }}>
+        <p className="mutedSmall">
           Requires HTTPS (CloudFront) and mic permission. Your TwiML App’s Voice
           URL must point to <code>/client/voice</code>.
         </p>
       </section>
 
-      <section style={styles.card}>
-        <h2 style={styles.h2}>Status</h2>
-        <dl style={styles.kv}>
-          <div style={styles.kvRow}>
+      <section className="card">
+        <h2 className="h2">Status</h2>
+        <dl className="kv">
+          <div className="kvRow">
             <dt>SID</dt>
             <dd>{sid || "—"}</dd>
           </div>
-          <div style={styles.kvRow}>
+          <div className="kvRow">
             <dt>Status</dt>
             <dd>{status || "—"}</dd>
           </div>
-          <div style={styles.kvRow}>
+          <div className="kvRow">
             <dt>To</dt>
             <dd>{to || "—"}</dd>
           </div>
-          <div style={styles.kvRow}>
+          <div className="kvRow">
             <dt>From</dt>
             <dd>{fromNumber || "—"}</dd>
           </div>
-          <div style={styles.kvRow}>
+          <div className="kvRow">
             <dt>Agent</dt>
             <dd>{agent || "—"}</dd>
           </div>
         </dl>
         {sid && !terminalStatuses.has((status || "") as CallStatus) && (
-          <p style={{ marginTop: 8, fontSize: 13, opacity: 0.8 }}>
-            Polling every 2s… (Stops when completed/failed)
-          </p>
+          <p className="mutedSmall">Polling every 2s… (Stops when completed/failed)</p>
         )}
       </section>
 
-      <section style={styles.card}>
-        <h2 style={styles.h2}>Call History</h2>
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+      <section className="card">
+        <h2 className="h2">Call History</h2>
+        <div className="btnRow mb-8">
           <button
-            style={styles.ghostBtn}
+            className="ghostBtn"
             onClick={exportCsv}
             disabled={!history.length}
           >
             Export CSV
           </button>
           <button
-            style={styles.secondaryBtn}
+            className="secondaryBtn"
             onClick={() => setHistory([])}
             disabled={!history.length}
           >
             Clear
           </button>
         </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={styles.table as React.CSSProperties}>
+        <div className="tableWrap">
+          <table className="table">
             <thead>
               <tr>
                 <th>Started</th>
@@ -564,10 +563,7 @@ export default function App() {
             <tbody>
               {history.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={7}
-                    style={{ textAlign: "center", opacity: 0.7, padding: 12 }}
-                  >
+                  <td colSpan={7} className="emptyCell">
                     No calls yet
                   </td>
                 </tr>
@@ -584,14 +580,7 @@ export default function App() {
                         ? `${h.durationSec}s`
                         : "—"}
                     </td>
-                    <td
-                      style={{
-                        fontFamily:
-                          "ui-monospace, SFMono-Regular, Menlo, monospace",
-                      }}
-                    >
-                      {h.sid}
-                    </td>
+                    <td className="mono">{h.sid}</td>
                   </tr>
                 ))
               )}
@@ -600,102 +589,9 @@ export default function App() {
         </div>
       </section>
 
-      <footer
-        style={{
-          textAlign: "center",
-          fontSize: 12,
-          opacity: 0.7,
-          marginTop: 24,
-        }}
-      >
+      <footer className="footer">
         Tip: Add your hosted origin to AllowedOrigins in SAM for clean CORS.
       </footer>
     </div>
   );
 }
-
-// ---------- Styles ----------
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    maxWidth: 1000,
-    margin: "24px auto",
-    padding: 16,
-    fontFamily:
-      "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji",
-    color: "#0f172a",
-  },
-  header: {
-    display: "flex",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
-    background: "white",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-  },
-  h2: { margin: 0, marginBottom: 12, fontSize: 16 },
-  row: { display: "flex", gap: 12, alignItems: "center", marginTop: 8 },
-  label: { width: 110, fontSize: 13, opacity: 0.9 },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    padding: "8px 10px",
-    borderRadius: 8,
-    border: "1px solid #cbd5e1",
-    outline: "none",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
-  },
-  primaryBtn: {
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: "1px solid #0ea5e9",
-    background: "#0ea5e9",
-    color: "white",
-    cursor: "pointer",
-  },
-  secondaryBtn: {
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: "1px solid #ef4444",
-    background: "white",
-    color: "#ef4444",
-    cursor: "pointer",
-  },
-  ghostBtn: {
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: "1px solid #cbd5e1",
-    background: "white",
-    color: "#0f172a",
-    cursor: "pointer",
-  },
-  error: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #fecaca",
-    background: "#fef2f2",
-    color: "#991b1b",
-    fontSize: 13,
-  },
-  kv: { margin: 0 },
-  kvRow: {
-    display: "grid",
-    gridTemplateColumns: "120px 1fr",
-    padding: "6px 0",
-    borderTop: "1px dashed #e5e7eb",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-};
