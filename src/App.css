@@ -206,3 +206,29 @@
   opacity: 0.7;
   margin-top: 24px;
 }
+
+
+
+
+/* ... keep all the styles from earlier ... */
+
+/* Tabs / nav */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tab {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #0f172a;
+  background: #fff;
+}
+
+.tab.active {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.12);
+}
