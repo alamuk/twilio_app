@@ -3,44 +3,72 @@ name: Deploy frontend to S3 + CloudFront
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
-  id-token: write   # required for OIDC
+  id-token: write          # OIDC
   contents: read
 
 env:
   AWS_REGION: eu-north-1
   S3_BUCKET: calling-system-frontend
   CF_DISTRIBUTION_ID: EQGVKF62DQIBN
+  # Optional Vite envs (add as repo secrets if you need them)
+  # VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+  # VITE_FROM_POOL: ${{ secrets.VITE_FROM_POOL }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    concurrency:
+      group: deploy-frontend
+      cancel-in-progress: true
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
+          cache: 'npm'
 
       - name: Install deps
         run: npm ci
 
-      - name: Build
+      - name: Build (Vite)
         run: npm run build
+        # If you have Vite envs, uncomment:
+        # env:
+        #   VITE_API_BASE: ${{ env.VITE_API_BASE }}
+        #   VITE_FROM_POOL: ${{ env.VITE_FROM_POOL }}
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::688567267190:role/github-calling-system-role
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}   # <-- store your role ARN as a secret
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Sync to S3
+      # Long-cache all fingerprinted assets (immutable)
+      - name: Upload assets
         run: |
-          aws s3 sync dist/ s3://$S3_BUCKET/ --delete
+          aws s3 sync dist s3://$S3_BUCKET \
+            --delete \
+            --exclude "index.html" \
+            --cache-control "public,max-age=31536000,immutable"
 
+      # HTML should be no-cache so updates are instant
+      - name: Upload index.html
+        run: |
+          aws s3 cp dist/index.html s3://$S3_BUCKET/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --metadata-directive REPLACE \
+            --content-type "text/html; charset=utf-8"
+
+      # Only invalidate what changed
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
             --distribution-id $CF_DISTRIBUTION_ID \
-            --paths "/*"
+            --paths "/index.html" "/assets/*"
