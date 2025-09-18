@@ -65,7 +65,7 @@ export default function ServerCallPage() {
   const placeCall = async () => {
     setError(null);
     if (!apiBase) return setError("Set API Base URL first.");
-    if (!e164.test(to)) return setError("Enter a valid E.164 number (e.g. +447700900123).");
+    if (!e164.test(to)) return setError("Enter a valid number for Call. ");
     if (!fromNumber) return setError("Select a From number.");
 
     try {
@@ -122,10 +122,10 @@ export default function ServerCallPage() {
       <SettingsCard />
 
       <section className="card">
-        <h2 className="h2">Make a Call (Server-Placed)</h2>
+        <h2 className="h2">Make a Call</h2>
         <div className="grid">
           <div>
-            <label className="label">To (E.164)</label>
+            <label className="label">To  </label>
             <input className="input" value={to} onChange={(e) => setTo(e.target.value.trim())} placeholder="+447700900123" />
           </div>
           <div>

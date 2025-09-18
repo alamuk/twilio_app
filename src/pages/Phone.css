@@ -167,6 +167,17 @@
   border-radius: 999px;
 }
 
+/* ---------- Active-call flair (optional) ---------- */
+.is-calling .btn-call { filter: grayscale(0.2); }
+.is-calling .btn-hang { animation: pulse 1.2s infinite; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.35); }
+  70% { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+
+
 /* Small layout tweaks */
 @media (max-width: 420px) {
   .phone { margin-left: -4px; margin-right: -4px; }

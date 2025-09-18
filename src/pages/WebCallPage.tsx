@@ -56,7 +56,7 @@ export default function WebCallPage() {
     try {
       setError(null);
       if (!dev || !clientReady) throw new Error('Click "Enable mic & register" first.');
-      if (!e164.test(browserTo)) throw new Error("Enter a valid E.164 number for Browser Call.");
+      if (!e164.test(browserTo)) throw new Error("Enter a valid number for Call.");
       const params: Record<string, string> = {
         To: browserTo,
         From: browserFrom || fromPool[0] || "",
@@ -105,8 +105,8 @@ export default function WebCallPage() {
      {/* Hello Web Call (phone-style) */}
 <section className="card">
   <h2 className="h2">Hello Web Call</h2>
-
-  <div className="phone">
+  <div className={`phone ${activeBrowserCall ? "is-calling" : ""}`}>
+  {/* <div className="phone"> */}
     {/* Status bar + notch */}
     <div className="phone-statusbar">
       <span className="dot" />
@@ -130,7 +130,7 @@ export default function WebCallPage() {
       </div>
 
       <div className="phone-field">
-        <label>To (E.164)</label>
+        <label>To (+44) </label>
         <input
           className="phone-input"
           value={browserTo}
