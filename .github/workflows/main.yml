@@ -41,6 +41,7 @@ jobs:
 
       - name: Build (Vite)
         run: npm run build
+        
         # If you want to inject envs at build time, uncomment:
         # env:
         #   VITE_API_BASE: ${{ env.VITE_API_BASE }}
@@ -49,7 +50,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}   # create an IAM role for GitHub OIDC and save its ARN as a repo secret
+          role-to-assume: arn:aws:iam::688567267190:role/github-calling-system-role
           aws-region: ${{ env.AWS_REGION }}
 
       # Fingerprinted assets → long cache
