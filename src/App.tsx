@@ -441,7 +441,7 @@ export default function App() {
 
       {/* BROWSER CALL (WEBRTC) */}
       <section style={styles.card}>
-        <h2 style={styles.h2}>Browser Call (WebRTC → PSTN)</h2>
+        <h2 style={styles.h2}> Web Call </h2>
         <div style={styles.row}>
           <button
             style={styles.primaryBtn}
