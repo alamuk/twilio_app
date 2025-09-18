@@ -1,13 +1,16 @@
+
+// {/* ignore */}// import React from "react";
+
+
 import React, { useState } from "react";
 import { Device } from "@twilio/voice-sdk";
 import { useDialer, e164 } from "../context/DialerContext";
 import SettingsCard from "../components/SettingsCard";
 import StatusPanel from "../components/StatusPanel";
 import HistoryTable from "../components/HistoryTable";
-import './Phone.css';
 
 
-export default function WebCallPage() {
+export default function TestPage() {
   const { apiBase, fromPool, agent, addHistory } = useDialer();
 
   const [dev, setDev] = useState<Device | null>(null);
@@ -102,95 +105,44 @@ export default function WebCallPage() {
     <>
       <SettingsCard />
 
-     {/* Hello Web Call (phone-style) */}
-<section className="card">
-  <h2 className="h2">Hello Web Call</h2>
-
-  <div className="phone">
-    {/* Status bar + notch */}
-    <div className="phone-statusbar">
-      <span className="dot" />
-      <span className="dot" />
-      <span className="dot" />
-      <div className="notch" />
-    </div>
-
-    {/* Screen content */}
-    <div className="phone-body">
-      <div className="phone-title">Browser Call</div>
-
-      <div className="phone-row">
-        <button
-          className="btn btn-primary block"
-          onClick={registerClient}
-          disabled={clientReady}
-        >
-          {clientReady ? "Mic ready ✓" : "Enable mic & register"}
-        </button>
-      </div>
-
-      <div className="phone-field">
-        <label>To (E.164)</label>
-        <input
-          className="phone-input"
-          value={browserTo}
-          onChange={(e) => setBrowserTo(e.target.value.trim())}
-          placeholder="+447700900123"
-        />
-      </div>
-
-      <div className="phone-field">
-        <label>Caller ID</label>
-        <select
-          className="phone-input"
-          value={browserFrom}
-          onChange={(e) => setBrowserFrom(e.target.value)}
-        >
-          <option value="">(Select Caller Number)</option>
-          {fromPool.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {error && (
-        <div className="phone-error">
-          <strong>Error:</strong> {error}
+      <section className="card">
+        <h2 className="h2">Hello Web Call</h2>
+        <div className="row">
+          <button className="primaryBtn" onClick={registerClient} disabled={clientReady}>
+            {clientReady ? "Mic ready ✓" : "Enable mic & register"}
+          </button>
         </div>
-      )}
 
-      <div className="phone-actions">
-        <button
-          className="btn btn-call"
-          onClick={callFromBrowser}
-          disabled={!clientReady}
-        >
-          Call from browser
-        </button>
-        <button
-          className="btn btn-hang"
-          onClick={hangupBrowser}
-          disabled={!activeBrowserCall}
-        >
-          Hang up
-        </button>
-      </div>
+        <div className="grid">
+          <div>
+            <label className="label">To (E.164)</label>
+            <input className="input" value={browserTo} onChange={(e) => setBrowserTo(e.target.value.trim())} placeholder="+447700900123" />
+          </div>
+          <div>
+            <label className="label">Caller ID</label>
+            <select className="input" value={browserFrom} onChange={(e) => setBrowserFrom(e.target.value)}>
+              <option value="">(use first From)</option>
+              {fromPool.map((n) => (<option key={n} value={n}>{n}</option>))}
+            </select>
+          </div>
+        </div>
 
-      <p className="phone-hint">
-        Require mic permission, Customer phone number and Your caller number to make a call.
-    
-      </p>
-    </div>
+        {error && <div className="error"><strong>Error:</strong> {error}</div>}
 
-    {/* Bottom bar */}
-    <div className="phone-homebar" />
-  </div>
-</section>
+        <div className="btnRow">
+          <button className="primaryBtn" onClick={callFromBrowser} disabled={!clientReady}>Call from browser</button>
+          <button className="secondaryBtn" onClick={hangupBrowser} disabled={!activeBrowserCall}>Hang up</button>
+        </div>
 
-<StatusPanel sid={sid} status={status} to={browserTo} from={browserFrom || fromPool[0]} />
-<HistoryTable />
+        <p className="mutedSmall">
+          Requires mic permission. App’s Voice URL must point to <code>/client/voice</code>.
+        </p>
+      </section>
+
+      <StatusPanel sid={sid} status={status} to={browserTo} from={browserFrom || fromPool[0]} />
+
+      <HistoryTable />
     </>
   );
 }
+

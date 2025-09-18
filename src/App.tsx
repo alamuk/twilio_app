@@ -3,6 +3,7 @@ import ServerCallPage from "./pages/ServerCallPage";
 import WebCallPage from "./pages/WebCallPage";
 import { DialerProvider } from "./context/DialerContext";
 import "./App.css";
+import TestPage from "./pages/TestPage";
 
 export default function App() {
   return (
@@ -11,7 +12,7 @@ export default function App() {
         <div className="page">
           <header className="header">
             <h1 className="title">📞 Talentpull Dialer</h1>
-            <small className="subtitle">FastAPI · Lambda · API Gateway</small>
+            <small className="subtitle">Talenpull UK Ltd</small>
           </header>
 
           <nav className="tabs">
@@ -27,11 +28,15 @@ export default function App() {
             <Route path="/" element={<Navigate to="/web-call" replace />} />
             <Route path="/web-call" element={<WebCallPage />} />
             <Route path="/make-call" element={<ServerCallPage />} />
-            <Route path="*" element={<Navigate to="/make-call" replace />} />
+             <Route path="/test" element={<TestPage />} />
+            <Route path="*" element={<Navigate to="/web-call" replace />} />
           </Routes>
 
           <footer className="footer">
-            Tip: Add your hosted origin to AllowedOrigins in SAM for clean CORS.
+           @ talentpull.uk
+            <br />
+            2025 Talentpull.uk Ltd
+            <br />
           </footer>
         </div>
       </BrowserRouter>
