@@ -6,16 +6,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write          # OIDC
+  id-token: write          # for OIDC role assumption
   contents: read
 
 env:
   AWS_REGION: eu-north-1
   S3_BUCKET: calling-system-frontend
   CF_DISTRIBUTION_ID: EQGVKF62DQIBN
-  # Optional Vite envs (add as repo secrets if you need them)
-  # VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
-  # VITE_FROM_POOL: ${{ secrets.VITE_FROM_POOL }}
+
+  # Optional: set these as GitHub “Repository secrets” or “Repository variables”
+  # and uncomment the Build step env block below if you want them baked into the app.
+  # VITE_API_BASE: https://5x7ca91b1a.execute-api.eu-north-1.amazonaws.com
+  # VITE_FROM_POOL: +442045729271,+442045729835,+442045386861,+442045726794,+442045385422,+442045728252,+442045729024
 
 jobs:
   deploy:
@@ -39,7 +41,7 @@ jobs:
 
       - name: Build (Vite)
         run: npm run build
-        # If you have Vite envs, uncomment:
+        # If you want to inject envs at build time, uncomment:
         # env:
         #   VITE_API_BASE: ${{ env.VITE_API_BASE }}
         #   VITE_FROM_POOL: ${{ env.VITE_FROM_POOL }}
@@ -47,10 +49,10 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}   # <-- store your role ARN as a secret
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}   # create an IAM role for GitHub OIDC and save its ARN as a repo secret
           aws-region: ${{ env.AWS_REGION }}
 
-      # Long-cache all fingerprinted assets (immutable)
+      # Fingerprinted assets → long cache
       - name: Upload assets
         run: |
           aws s3 sync dist s3://$S3_BUCKET \
@@ -58,7 +60,7 @@ jobs:
             --exclude "index.html" \
             --cache-control "public,max-age=31536000,immutable"
 
-      # HTML should be no-cache so updates are instant
+      # HTML → no-cache
       - name: Upload index.html
         run: |
           aws s3 cp dist/index.html s3://$S3_BUCKET/index.html \
@@ -66,7 +68,6 @@ jobs:
             --metadata-directive REPLACE \
             --content-type "text/html; charset=utf-8"
 
-      # Only invalidate what changed
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
