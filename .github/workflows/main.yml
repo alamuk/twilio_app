@@ -39,8 +39,42 @@ jobs:
       - name: Install deps
         run: npm ci
 
+# Optional: fail-fast check so you don't build with missing envs
+      - name: Verify required envs
+        run: |
+          required=( \
+            VITE_FIREBASE_API_KEY \
+            VITE_FIREBASE_AUTH_DOMAIN \
+            VITE_FIREBASE_PROJECT_ID \
+            VITE_FIREBASE_APP_ID \
+            VITE_API_BASE \
+            VITE_FROM_POOL \
+          )
+          for k in "${required[@]}"; do
+            if [ -z "${!k}" ]; then
+              echo "::error title=Missing env::$k is not set"
+              exit 1
+            fi
+          done
+        env:
+          # Prefer GitHub Secrets for sensitive values
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          # These can also be secrets or repo variables
+          VITE_API_BASE: ${{ vars.VITE_API_BASE || secrets.VITE_API_BASE }}
+          VITE_FROM_POOL: ${{ vars.VITE_FROM_POOL || secrets.VITE_FROM_POOL }}
+
       - name: Build (Vite)
         run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_API_BASE: ${{ vars.VITE_API_BASE || secrets.VITE_API_BASE }}
+          VITE_FROM_POOL: ${{ vars.VITE_FROM_POOL || secrets.VITE_FROM_POOL }}
 
         # If you want to inject envs at build time, uncomment:
         # env:
