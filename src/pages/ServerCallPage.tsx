@@ -1,17 +1,30 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useDialer, e164, CallStatus, terminalStatuses, HistoryEntry } from "../context/DialerContext";
-import SettingsCard from "../components/SettingsCard";
-import StatusPanel from "../components/StatusPanel";
-import HistoryTable from "../components/HistoryTable";
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  useDialer,
+  e164,
+  CallStatus,
+  terminalStatuses,
+  HistoryEntry,
+} from '../context/DialerContext';
+import SettingsCard from '../components/SettingsCard';
+import StatusPanel from '../components/StatusPanel';
+import HistoryTable from '../components/HistoryTable';
 
-type CallResponse = { sid: string; status: CallStatus; to: string; from: string };
+type CallResponse = {
+  sid: string;
+  status: CallStatus;
+  to: string;
+  from: string;
+};
 
 export default function ServerCallPage() {
   const { apiBase, fromPool, agent, addHistory, updateHistory } = useDialer();
 
-  const [to, setTo] = useState("");
-  const [fromNumber, setFromNumber] = useState(fromPool[0] || "");
-  const [message, setMessage] = useState("Hello! This is a test call from our dialer.");
+  const [to, setTo] = useState('');
+  const [fromNumber, setFromNumber] = useState(fromPool[0] || '');
+  const [message, setMessage] = useState(
+    'Hello! This is a test call from our dialer.'
+  );
   const [error, setError] = useState<string | null>(null);
 
   const [sid, setSid] = useState<string | null>(null);
@@ -34,17 +47,26 @@ export default function ServerCallPage() {
     stopPolling();
     pollRef.current = window.setInterval(async () => {
       try {
-        const res = await fetch(`${apiBase}/api/status?sid=${encodeURIComponent(id)}`);
+        const res = await fetch(
+          `${apiBase}/api/status?sid=${encodeURIComponent(id)}`
+        );
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
         const data = await res.json();
-        const st = (data.status || "").toString() as CallStatus;
+        const st = (data.status || '').toString() as CallStatus;
         setStatus(st);
         if (terminalStatuses.has(st)) {
           const ended = new Date();
           const dur = startTimeRef.current
-            ? Math.max(0, Math.round((ended.getTime() - startTimeRef.current) / 1000))
+            ? Math.max(
+                0,
+                Math.round((ended.getTime() - startTimeRef.current) / 1000)
+              )
             : undefined;
-          updateHistory(id, { status: st, endedAt: ended.toISOString(), durationSec: dur });
+          updateHistory(id, {
+            status: st,
+            endedAt: ended.toISOString(),
+            durationSec: dur,
+          });
           stopPolling();
         }
       } catch (e: any) {
@@ -64,18 +86,23 @@ export default function ServerCallPage() {
 
   const placeCall = async () => {
     setError(null);
-    if (!apiBase) return setError("Set API Base URL first.");
-    if (!e164.test(to)) return setError("Enter a valid number for Call. ");
-    if (!fromNumber) return setError("Select a From number.");
+    if (!apiBase) return setError('Set API Base URL first.');
+    if (!e164.test(to)) return setError('Enter a valid number for Call. ');
+    if (!fromNumber) return setError('Select a From number.');
 
     try {
       const res = await fetch(`${apiBase}/api/call`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to, from_number: fromNumber, message }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(typeof data?.detail === "string" ? data.detail : data?.message || JSON.stringify(data));
+        throw new Error(
+          typeof data?.detail === 'string'
+            ? data.detail
+            : data?.message || JSON.stringify(data)
+        );
       }
       const started = new Date();
       startTimeRef.current = started.getTime();
@@ -83,8 +110,13 @@ export default function ServerCallPage() {
       setSid(cr.sid);
       setStatus(cr.status);
       const entry: HistoryEntry = {
-        sid: cr.sid, to, from: fromNumber, agent: agent || "—",
-        message, startedAt: started.toISOString(), status: cr.status,
+        sid: cr.sid,
+        to,
+        from: fromNumber,
+        agent: agent || '—',
+        message,
+        startedAt: started.toISOString(),
+        status: cr.status,
       };
       addHistory(entry);
       startPolling(cr.sid);
@@ -98,19 +130,31 @@ export default function ServerCallPage() {
     setError(null);
     try {
       const res = await fetch(`${apiBase}/api/hangup`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sid }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(typeof data?.detail === "string" ? data.detail : data?.message || JSON.stringify(data));
+        throw new Error(
+          typeof data?.detail === 'string'
+            ? data.detail
+            : data?.message || JSON.stringify(data)
+        );
       }
-      setStatus("completed");
+      setStatus('completed');
       const ended = new Date();
       const dur = startTimeRef.current
-        ? Math.max(0, Math.round((ended.getTime() - startTimeRef.current) / 1000))
+        ? Math.max(
+            0,
+            Math.round((ended.getTime() - startTimeRef.current) / 1000)
+          )
         : undefined;
-      updateHistory(sid, { status: "completed", endedAt: ended.toISOString(), durationSec: dur });
+      updateHistory(sid, {
+        status: 'completed',
+        endedAt: ended.toISOString(),
+        durationSec: dur,
+      });
       stopPolling();
     } catch (e: any) {
       setError(e?.message || String(e));
@@ -125,28 +169,61 @@ export default function ServerCallPage() {
         <h2 className="h2">Make a Call</h2>
         <div className="grid">
           <div>
-            <label className="label">To  </label>
-            <input className="input" value={to} onChange={(e) => setTo(e.target.value.trim())} placeholder="+447700900123" />
+            <label className="label">To </label>
+            <input
+              className="input"
+              value={to}
+              onChange={(e) => setTo(e.target.value.trim())}
+              placeholder="+447700900123"
+            />
           </div>
           <div>
             <label className="label">From</label>
-            <select className="input" value={fromNumber} onChange={(e) => setFromNumber(e.target.value)}>
+            <select
+              className="input"
+              value={fromNumber}
+              onChange={(e) => setFromNumber(e.target.value)}
+            >
               <option value="">-- select --</option>
-              {fromPool.map((n) => (<option key={n} value={n}>{n}</option>))}
+              {fromPool.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
             </select>
           </div>
         </div>
         <div className="mt-12">
           <label className="label">Message</label>
-          <textarea className="input textarea" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <textarea
+            className="input textarea"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
         </div>
 
-        {error && <div className="error"><strong>Error:</strong> {error}</div>}
+        {error && (
+          <div className="error">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
 
         <div className="btnRow">
-          <button className="primaryBtn" onClick={placeCall}>Call</button>
-          <button className="secondaryBtn" onClick={hangup} disabled={!sid || terminalStatuses.has((status || "") as CallStatus)}>Hang up</button>
-          <button className="ghostBtn" onClick={reset} disabled={!sid}>Reset</button>
+          <button className="primaryBtn" onClick={placeCall}>
+            Call
+          </button>
+          <button
+            className="secondaryBtn"
+            onClick={hangup}
+            disabled={
+              !sid || terminalStatuses.has((status || '') as CallStatus)
+            }
+          >
+            Hang up
+          </button>
+          <button className="ghostBtn" onClick={reset} disabled={!sid}>
+            Reset
+          </button>
         </div>
       </section>
 

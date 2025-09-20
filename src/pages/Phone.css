@@ -42,9 +42,18 @@
 
 .phone-body {
   padding: 16px 16px 8px 16px;
-  background: radial-gradient(160px 60px at 80% -20%, rgba(14,165,233,0.15), transparent),
-              radial-gradient(180px 80px at -10% -10%, rgba(99,102,241,0.12), transparent),
-              #ffffff;
+  background:
+    radial-gradient(
+      160px 60px at 80% -20%,
+      rgba(14, 165, 233, 0.15),
+      transparent
+    ),
+    radial-gradient(
+      180px 80px at -10% -10%,
+      rgba(99, 102, 241, 0.12),
+      transparent
+    ),
+    #ffffff;
 }
 
 .phone-title {
@@ -80,7 +89,7 @@
 
 .phone-input:focus {
   border-color: #0ea5e9;
-  box-shadow: 0 0 0 4px rgba(14,165,233,0.12);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.12);
 }
 
 /* ---- Buttons ----------------------------------------------------------- */
@@ -90,7 +99,10 @@
   border-radius: 16px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.05s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.05s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .btn:active:not(:disabled) {
@@ -102,14 +114,16 @@
   cursor: not-allowed;
 }
 
-.block { width: 100%; }
+.block {
+  width: 100%;
+}
 
 /* Primary (register) */
 .btn-primary {
   background: #0ea5e9;
   border-color: #0ea5e9;
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(14,165,233,0.25);
+  box-shadow: 0 6px 14px rgba(14, 165, 233, 0.25);
 }
 
 /* Call (green) and Hang (red) */
@@ -124,7 +138,7 @@
   background: #10b981;
   border-color: #10b981;
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(16,185,129,0.25);
+  box-shadow: 0 6px 14px rgba(16, 185, 129, 0.25);
 }
 
 .btn-hang {
@@ -159,7 +173,7 @@
 }
 
 .phone-homebar::after {
-  content: "";
+  content: '';
   display: block;
   width: 120px;
   height: 4px;
@@ -168,17 +182,28 @@
 }
 
 /* ---------- Active-call flair (optional) ---------- */
-.is-calling .btn-call { filter: grayscale(0.2); }
-.is-calling .btn-hang { animation: pulse 1.2s infinite; }
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.35); }
-  70% { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
-  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+.is-calling .btn-call {
+  filter: grayscale(0.2);
 }
-
-
+.is-calling .btn-hang {
+  animation: pulse 1.2s infinite;
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
 
 /* Small layout tweaks */
 @media (max-width: 420px) {
-  .phone { margin-left: -4px; margin-right: -4px; }
+  .phone {
+    margin-left: -4px;
+    margin-right: -4px;
+  }
 }

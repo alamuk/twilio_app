@@ -2,11 +2,11 @@ name: Deploy frontend to S3 + CloudFront
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
-  id-token: write          # for OIDC role assumption
+  id-token: write # for OIDC role assumption
   contents: read
 
 env:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Build (Vite)
         run: npm run build
-        
+
         # If you want to inject envs at build time, uncomment:
         # env:
         #   VITE_API_BASE: ${{ env.VITE_API_BASE }}

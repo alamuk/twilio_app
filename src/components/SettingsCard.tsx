@@ -1,7 +1,8 @@
-import { useDialer } from "../context/DialerContext";
+import { useDialer } from '../context/DialerContext';
 
 export default function SettingsCard() {
-  const { apiBase, setApiBase, fromPoolRaw, setFromPoolRaw, agent, setAgent } = useDialer();
+  const { apiBase, setApiBase, fromPoolRaw, setFromPoolRaw, agent, setAgent } =
+    useDialer();
   return (
     <section className="card">
       <h2 className="h2">Settings</h2>
