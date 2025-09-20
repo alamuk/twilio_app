@@ -8,5 +8,12 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+if (!firebaseConfig.apiKey) {
+  throw new Error(
+    "[Firebase] Missing VITE_FIREBASE_API_KEY. Did you set .env and restart the dev server / rebuild prod?"
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
