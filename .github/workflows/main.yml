@@ -6,18 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write # for OIDC role assumption
+  id-token: write
   contents: read
 
 env:
   AWS_REGION: eu-north-1
   S3_BUCKET: calling-system-frontend
   CF_DISTRIBUTION_ID: EQGVKF62DQIBN
-
-  # Optional: set these as GitHub “Repository secrets” or “Repository variables”
-  # and uncomment the Build step env block below if you want them baked into the app.
-  # VITE_API_BASE: https://5x7ca91b1a.execute-api.eu-north-1.amazonaws.com
-  # VITE_FROM_POOL: +442045729271,+442045729835,+442045386861,+442045726794,+442045385422,+442045728252,+442045729024
 
 jobs:
   deploy:
@@ -34,14 +29,33 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: npm ci
 
-# Optional: fail-fast check so you don't build with missing envs
-      - name: Verify required envs
+      # 1) Load bundled secret MY_ENV_SECRETE (KEY=VALUE lines) into the job environment
+      - name: Load bundled env
+        shell: bash
+        env:
+          BUNDLE: ${{ secrets.MY_ENV_SECRETE }}
         run: |
+          set -euo pipefail
+          if [ -z "${BUNDLE:-}" ]; then
+            echo "::error title=Missing secret::MY_ENV_SECRETE is not set"
+            exit 1
+          fi
+          printf '%s\n' "$BUNDLE" | awk '
+            /^[[:space:]]*$/ { next }      # skip empty
+            /^[[:space:]]*#/ { next }       # skip comments
+            { print $0 }
+          ' >> "$GITHUB_ENV"
+
+      # Fail fast if any required keys are missing after loading the bundle
+      - name: Verify required envs
+        shell: bash
+        run: |
+          set -euo pipefail
           required=( \
             VITE_FIREBASE_API_KEY \
             VITE_FIREBASE_AUTH_DOMAIN \
@@ -50,36 +64,21 @@ jobs:
             VITE_API_BASE \
             VITE_FROM_POOL \
           )
+          missing=0
           for k in "${required[@]}"; do
-            if [ -z "${!k}" ]; then
-              echo "::error title=Missing env::$k is not set"
-              exit 1
+            if [ -z "${!k:-}" ]; then
+              echo "::error title=Missing env in MY_ENV_SECRETE::$k is not set"
+              missing=1
             fi
           done
-        env:
-          # Prefer GitHub Secrets for sensitive values
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          # These can also be secrets or repo variables
-          VITE_API_BASE: ${{ vars.VITE_API_BASE || secrets.VITE_API_BASE }}
-          VITE_FROM_POOL: ${{ vars.VITE_FROM_POOL || secrets.VITE_FROM_POOL }}
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "All required envs present."
 
       - name: Build (Vite)
         run: npm run build
-        env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_API_BASE: ${{ vars.VITE_API_BASE || secrets.VITE_API_BASE }}
-          VITE_FROM_POOL: ${{ vars.VITE_FROM_POOL || secrets.VITE_FROM_POOL }}
-
-        # If you want to inject envs at build time, uncomment:
-        # env:
-        #   VITE_API_BASE: ${{ env.VITE_API_BASE }}
-        #   VITE_FROM_POOL: ${{ env.VITE_FROM_POOL }}
+        # inherits env from $GITHUB_ENV
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
