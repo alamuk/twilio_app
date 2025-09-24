@@ -1,138 +1,104 @@
-import React, { useState } from 'react';
-import { Device } from '@twilio/voice-sdk';
-import { useDialer, e164 } from '../context/DialerContext';
-import SettingsCard from '../components/SettingsCard';
-import StatusPanel from '../components/StatusPanel';
-import HistoryTable from '../components/HistoryTable';
-import './Phone.css';
+import React, { useEffect, useState } from "react";
+import { useDialer, e164 } from "../context/DialerContext";
+import SettingsCard from "../components/SettingsCard";
+import StatusPanel from "../components/StatusPanel";
+import HistoryTable from "../components/HistoryTable";
+import "./Phone.css";
 
 export default function WebCallPage() {
-  const { apiBase, fromPool, agent, addHistory } = useDialer();
+  const {
+    apiBase,
+    fromPool,
+    agent,
+    addHistory,
+    clientReady,
+    activeCall,
+    muted,
+    registerIfNeeded,
+    startCall,
+    hangup,
+    toggleMute,
+  } = useDialer();
 
-  const [dev, setDev] = useState<Device | null>(null);
-  const [clientReady, setClientReady] = useState(false);
-  const [activeBrowserCall, setActiveBrowserCall] = useState<any>(null);
-
-  const [browserTo, setBrowserTo] = useState('');
-  const [browserFrom, setBrowserFrom] = useState('');
-
-  const [sid, setSid] = useState<string | null>(null); // we’ll fill this from Twilio's returned call parameters if available
-  const [status, setStatus] = useState<string | null>(null); // lightweight status for browser call
+  const [browserTo, setBrowserTo] = useState("");
+  const [browserFrom, setBrowserFrom] = useState("");
+  const [sid, setSid] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const getToken = async (identity: string) => {
-    const res = await fetch(`${apiBase}/api/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identity }),
-    });
-    const data = await res.json();
-    if (!res.ok)
-      throw new Error(data?.detail || data?.message || 'Token error');
-    return data.token as string;
-  };
+  // Auto-register on mount
+  useEffect(() => {
+    registerIfNeeded().catch((e) => setError(e.message));
+  }, [apiBase, agent]);
 
-  const registerClient = async () => {
-    try {
-      setError(null);
-      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-        throw new Error('Browser calling requires HTTPS (use CloudFront).');
+  // Optional: auto-call via query params: ?autocall=1&to=+44...&from=+44...
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("autocall") === "1" && clientReady && !activeCall) {
+      const to = url.searchParams.get("to") || "";
+      const f = url.searchParams.get("from") || fromPool[0] || "";
+      if (to && f) {
+        setBrowserTo(to);
+        setBrowserFrom(f);
+        handleCall(to, f);
       }
-      if (!apiBase) throw new Error('Set API Base URL first.');
-
-      const identity = agent || 'agent';
-      const token = await getToken(identity);
-      const device = new Device(token, { logLevel: 'error' });
-      device.on('registered', () => setClientReady(true));
-      device.on('error', (e) => setError(`Device error: ${e.message}`));
-      await device.register();
-      setDev(device);
-    } catch (e: any) {
-      setError(e?.message || String(e));
     }
-  };
+  }, [clientReady, activeCall, fromPool]);
 
-  const callFromBrowser = async () => {
+  const handleCall = async (to: string, from: string) => {
     try {
       setError(null);
-      if (!dev || !clientReady)
-        throw new Error('Click "Enable mic & register" first.');
-      if (!e164.test(browserTo))
-        throw new Error('Enter a valid number for Call.');
-      const params: Record<string, string> = {
-        To: browserTo,
-        From: browserFrom || fromPool[0] || '',
-      };
-      const call = await dev.connect({ params });
-
-      setStatus('in-progress');
-      setActiveBrowserCall(call);
-
-      // Twilio's JS SDK may not immediately give a PSTN SID, but we can log a local pseudo-entry
+      if (!e164.test(to)) throw new Error("Enter a valid E.164 number.");
+      const call = await startCall(to, from);
+      setStatus("in-progress");
       const started = new Date();
-      const sidLike = `client-${started.getTime()}`; // local tracking only
+      const sidLike = `client-${started.getTime()}`;
       setSid(sidLike);
-
       addHistory({
         sid: sidLike,
-        to: browserTo,
-        from: params.From,
-        agent: agent || '—',
-        message: '(Browser call)',
+        to,
+        from,
+        agent: agent || "—",
+        message: "(Browser call)",
         startedAt: started.toISOString(),
-        status: 'in-progress',
+        status: "in-progress",
       });
-
-      call.on('disconnect', () => {
-        setActiveBrowserCall(null);
-        setStatus('completed');
-      });
+      call.on("disconnect", () => setStatus("completed"));
     } catch (e: any) {
       setError(e?.message || String(e));
     }
   };
 
-  const hangupBrowser = () => {
-    if (activeBrowserCall) {
-      activeBrowserCall.disconnect();
-      setActiveBrowserCall(null);
-      setStatus('completed');
-    }
-  };
+  // keyboard shortcut: M to toggle mute
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "m" && activeCall) toggleMute();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeCall, toggleMute]);
 
   return (
     <>
       <SettingsCard />
 
-      {/* Hello Web Call (phone-style) */}
       <section className="card">
         <h2 className="h2">Hello Web Call</h2>
-        <div className={`phone ${activeBrowserCall ? 'is-calling' : ''}`}>
-          {/* <div className="phone"> */}
-          {/* Status bar + notch */}
+        <div className={`phone ${activeCall ? "is-calling" : ""}`}>
           <div className="phone-statusbar">
-            <span className="dot" />
-            <span className="dot" />
-            <span className="dot" />
+            <span className="dot" /><span className="dot" /><span className="dot" />
             <div className="notch" />
           </div>
 
-          {/* Screen content */}
           <div className="phone-body">
             <div className="phone-title">Browser Call</div>
 
-            <div className="phone-row">
-              <button
-                className="btn btn-primary block"
-                onClick={registerClient}
-                disabled={clientReady}
-              >
-                {clientReady ? 'Mic ready ✓' : 'Enable mic & register'}
-              </button>
+            <div className="phone-hint" style={{ marginBottom: 8 }}>
+              {clientReady ? "Mic ready ✓" : "Preparing microphone…"}
             </div>
 
             <div className="phone-field">
-              <label>To (+44) </label>
+              <label>To (+country)</label>
               <input
                 className="phone-input"
                 value={browserTo}
@@ -148,11 +114,9 @@ export default function WebCallPage() {
                 value={browserFrom}
                 onChange={(e) => setBrowserFrom(e.target.value)}
               >
-                <option value="">(Select Caller Number)</option>
+                <option value="">{fromPool[0] || "(Select Caller Number)"}</option>
                 {fromPool.map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
+                  <option key={n} value={n}>{n}</option>
                 ))}
               </select>
             </div>
@@ -166,27 +130,37 @@ export default function WebCallPage() {
             <div className="phone-actions">
               <button
                 className="btn btn-call"
-                onClick={callFromBrowser}
-                disabled={!clientReady}
+                onClick={() => handleCall(browserTo, browserFrom || fromPool[0] || "")}
+                disabled={!clientReady || !!activeCall}
               >
-                Make Web Call 
+                Make Web Call
               </button>
+
+              <button
+                className="btn btn-mute"
+                onClick={toggleMute}
+                disabled={!activeCall}
+                title="Mute/Unmute (M)"
+              >
+                {muted ? "Unmute" : "Mute"}
+              </button>
+            </div>
+
+            <div className="phone-actions phone-actions--center">
               <button
                 className="btn btn-hang"
-                onClick={hangupBrowser}
-                disabled={!activeBrowserCall}
+                onClick={hangup}
+                disabled={!activeCall}
               >
                 Hang up
               </button>
             </div>
 
             <p className="phone-hint">
-              Require mic permission, Customer phone number and Your caller
-              number to make a call.
+              Calls continue while you navigate inside the app. Avoid full page refresh.
             </p>
           </div>
 
-          {/* Bottom bar */}
           <div className="phone-homebar" />
         </div>
       </section>
@@ -196,6 +170,7 @@ export default function WebCallPage() {
         status={status}
         to={browserTo}
         from={browserFrom || fromPool[0]}
+        agent={agent}
       />
       <HistoryTable />
     </>

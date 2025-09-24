@@ -1,5 +1,6 @@
 /* ---- Phone frame ------------------------------------------------------- */
 .phone {
+
   width: 360px;
   max-width: 100%;
   margin: 8px 0;
@@ -41,7 +42,10 @@
 }
 
 .phone-body {
-  padding: 16px 16px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 15px 16px 8px 16px;
   background:
     radial-gradient(
       160px 60px at 80% -20%,
@@ -129,6 +133,7 @@
 .phone-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 14px;
 }
@@ -144,6 +149,14 @@
   background: #ffffff;
   color: #ef4444;
   border-color: #ef4444;
+   grid-column: 1 / -1;
+  justify-self: stretch;
+}
+
+.btn-mute {
+  border-color: #d1d5db;
+  box-shadow: 0 6px 14px rgba(209, 213, 219, 0.25);
+  
 }
 
 /* ---- Hint / Error ------------------------------------------------------ */
@@ -199,6 +212,33 @@
   }
 }
 
+
+
+/* Larger textarea & refined inputs for the server dialer screen */
+.phone-textarea.big {
+  width: 93%;
+  min-height: 140px;
+  resize: vertical;
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+}
+
+.phone-field label {
+  display: block;
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+
+
+
+
+
 /* Small layout tweaks */
 @media (max-width: 420px) {
   .phone {
@@ -206,3 +246,6 @@
     margin-right: -4px;
   }
 }
+
+
+
