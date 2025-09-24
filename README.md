@@ -1,5 +1,3 @@
-# Twilio Dialer Frontend (Vite + React)
-
 
 # 📞 Twilio Dialer – Frontend (Vite + React)
 
@@ -53,18 +51,16 @@ You can provide these via **Vite envs** or type them in the **UI Settings panel*
 ```ini
 VITE_API_BASE=https://<api-id>.execute-api.<region>.amazonaws.com
 VITE_FROM_POOL=+numbers 
-
-
 ```
-# install dependencies
+
+```ini
+##### install dependencies
 npm ci
-
-# start dev server
+##### start dev server
 npm run dev
+##### open the URL printed by Vite (e.g. http://localhost:5173)
 
-# open the URL printed by Vite (e.g. http://localhost:5173)
 ```
-
 
 ### Custom Domain (Route53)
 
