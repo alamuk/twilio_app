@@ -38,7 +38,7 @@ jobs:
       - name: Load bundled env
         shell: bash
         env:
-          BUNDLE: ${{ secrets.MY_ENV_SECRETE }}
+          BUNDLE: ${{ secrets.MY_ENV_SECRET }}
         run: |
           set -euo pipefail
           if [ -z "${BUNDLE:-}" ]; then
