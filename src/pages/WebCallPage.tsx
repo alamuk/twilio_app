@@ -169,7 +169,7 @@ export default function WebCallPage() {
                 onClick={callFromBrowser}
                 disabled={!clientReady}
               >
-                Call from browser
+                Make Web Call 
               </button>
               <button
                 className="btn btn-hang"
