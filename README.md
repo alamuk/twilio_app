@@ -13,7 +13,7 @@ Supports two modes:
 ## Demo / Links
 
 - **Live site**: [https://www.talentpulltech.cloud/login](Dailer) (CloudFront / Route53)  
-- **Backend API sample- **: `https://<api-id>.execute-api.<region>.amazonaws.com` (hiddeen)
+- **Backend API sample- **: `https://<api-id>.execute-api.<region>.amazonaws.com` 
 - **GitHub repo**: `https://github.com/alamuk/twilio_app`
 
  Tip: For best results with browser calling, use **HTTPS** (CloudFront/Route53 domain).
