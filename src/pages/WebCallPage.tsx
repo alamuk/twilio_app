@@ -50,7 +50,7 @@ export default function WebCallPage() {
     try {
       setError(null);
       if (!e164.test(to)) {
-        throw new Error("Enter a valid E.164 number (e.g. +447700900123).");
+        throw new Error("Enter a valid number (e.g. +447700900123).");
       }
       if (!from) {
         throw new Error("Choose a Caller ID number.");
@@ -187,8 +187,7 @@ export default function WebCallPage() {
             </div>
 
             <p className="phone-hint">
-              Calls continue while you navigate inside the app. Avoid full page
-              refresh.
+              Avoid full page refreshes while on a call.
             </p>
           </div>
 

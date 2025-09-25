@@ -67,7 +67,7 @@ export default function SettingsCard() {
       </div>
 
       <p style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
-        API Base is loaded from environment and can’t be edited here.
+        Agent name is required to make calls.
       </p>
     </section>
   );
