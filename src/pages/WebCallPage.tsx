@@ -7,7 +7,6 @@ import "./Phone.css";
 
 export default function WebCallPage() {
   const {
-    apiBase,
     fromPool,
     agent,
     addHistory,
@@ -26,12 +25,14 @@ export default function WebCallPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-register on mount
+  // Register Twilio Device once we land here
   useEffect(() => {
-    registerIfNeeded().catch((e) => setError(e.message));
-  }, [apiBase, agent]);
+    registerIfNeeded().catch((e: any) => setError(e?.message || String(e)));
+    // intentionally not adding as deps other values to avoid repeated re-registers
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registerIfNeeded]);
 
-  // Optional: auto-call via query params: ?autocall=1&to=+44...&from=+44...
+  // Optional auto-call: ?autocall=1&to=+44...&from=+44...
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get("autocall") === "1" && clientReady && !activeCall) {
@@ -40,20 +41,28 @@ export default function WebCallPage() {
       if (to && f) {
         setBrowserTo(to);
         setBrowserFrom(f);
-        handleCall(to, f);
+        void handleCall(to, f);
       }
     }
-  }, [clientReady, activeCall, fromPool]);
+  }, [clientReady, activeCall, fromPool]); // safe to depend on these
 
   const handleCall = async (to: string, from: string) => {
     try {
       setError(null);
-      if (!e164.test(to)) throw new Error("Enter a valid E.164 number.");
+      if (!e164.test(to)) {
+        throw new Error("Enter a valid E.164 number (e.g. +447700900123).");
+      }
+      if (!from) {
+        throw new Error("Choose a Caller ID number.");
+      }
+
       const call = await startCall(to, from);
       setStatus("in-progress");
+
       const started = new Date();
-      const sidLike = `client-${started.getTime()}`;
+      const sidLike = `client-${started.getTime()}`; // local tracking (Twilio client call)
       setSid(sidLike);
+
       addHistory({
         sid: sidLike,
         to,
@@ -63,13 +72,14 @@ export default function WebCallPage() {
         startedAt: started.toISOString(),
         status: "in-progress",
       });
+
       call.on("disconnect", () => setStatus("completed"));
     } catch (e: any) {
       setError(e?.message || String(e));
     }
   };
 
-  // keyboard shortcut: M to toggle mute
+  // Keyboard shortcut: M = mute/unmute
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "m" && activeCall) toggleMute();
@@ -78,18 +88,30 @@ export default function WebCallPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [activeCall, toggleMute]);
 
+  // Default the Caller ID dropdown to first pool item if user hasn’t picked
+  useEffect(() => {
+    if (!browserFrom && fromPool.length) {
+      setBrowserFrom(fromPool[0]);
+    }
+  }, [fromPool, browserFrom]);
+
   return (
     <>
       <SettingsCard />
 
       <section className="card">
         <h2 className="h2">Hello Web Call</h2>
+
         <div className={`phone ${activeCall ? "is-calling" : ""}`}>
+          {/* status bar UI */}
           <div className="phone-statusbar">
-            <span className="dot" /><span className="dot" /><span className="dot" />
+            <span className="dot" />
+            <span className="dot" />
+            <span className="dot" />
             <div className="notch" />
           </div>
 
+          {/* phone screen */}
           <div className="phone-body">
             <div className="phone-title">Browser Call</div>
 
@@ -104,6 +126,8 @@ export default function WebCallPage() {
                 value={browserTo}
                 onChange={(e) => setBrowserTo(e.target.value.trim())}
                 placeholder="+447700900123"
+                inputMode="tel"
+                autoComplete="tel"
               />
             </div>
 
@@ -114,9 +138,13 @@ export default function WebCallPage() {
                 value={browserFrom}
                 onChange={(e) => setBrowserFrom(e.target.value)}
               >
-                <option value="">{fromPool[0] || "(Select Caller Number)"}</option>
+                {fromPool.length === 0 && (
+                  <option value="">— (no numbers configured) —</option>
+                )}
                 {fromPool.map((n) => (
-                  <option key={n} value={n}>{n}</option>
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
                 ))}
               </select>
             </div>
@@ -130,7 +158,9 @@ export default function WebCallPage() {
             <div className="phone-actions">
               <button
                 className="btn btn-call"
-                onClick={() => handleCall(browserTo, browserFrom || fromPool[0] || "")}
+                onClick={() =>
+                  handleCall(browserTo, browserFrom || fromPool[0] || "")
+                }
                 disabled={!clientReady || !!activeCall}
               >
                 Make Web Call
@@ -157,10 +187,12 @@ export default function WebCallPage() {
             </div>
 
             <p className="phone-hint">
-              Calls continue while you navigate inside the app. Avoid full page refresh.
+              Calls continue while you navigate inside the app. Avoid full page
+              refresh.
             </p>
           </div>
 
+          {/* bottom bar */}
           <div className="phone-homebar" />
         </div>
       </section>
@@ -172,6 +204,7 @@ export default function WebCallPage() {
         from={browserFrom || fromPool[0]}
         agent={agent}
       />
+
       <HistoryTable />
     </>
   );

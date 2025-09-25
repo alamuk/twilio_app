@@ -29,12 +29,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: "npm"
 
       - name: Install deps
         run: npm ci
 
-      # 1) Load bundled secret MY_ENV_SECRETE (KEY=VALUE lines) into the job environment
+      # 1) Load bundled secret MY_ENV_SECRET (KEY=VALUE lines) into the job environment
       - name: Load bundled env
         shell: bash
         env:
