@@ -59,9 +59,9 @@ export default function ServerCallPage() {
           const ended = new Date();
           const dur = startTimeRef.current
             ? Math.max(
-                0,
-                Math.round((ended.getTime() - startTimeRef.current) / 1000)
-              )
+              0,
+              Math.round((ended.getTime() - startTimeRef.current) / 1000)
+            )
             : undefined;
           updateHistory(id, {
             status: st,
@@ -147,9 +147,9 @@ export default function ServerCallPage() {
       const ended = new Date();
       const dur = startTimeRef.current
         ? Math.max(
-            0,
-            Math.round((ended.getTime() - startTimeRef.current) / 1000)
-          )
+          0,
+          Math.round((ended.getTime() - startTimeRef.current) / 1000)
+        )
         : undefined;
       updateHistory(sid, {
         status: "completed",
@@ -245,7 +245,7 @@ export default function ServerCallPage() {
         </div>
       </section>
 
-      <StatusPanel sid={sid} status={status} to={to} from={fromNumber} />
+      <StatusPanel sid={sid} status={status} to={to} from={fromNumber} agent={agent} />
       <HistoryTable />
     </>
   );
